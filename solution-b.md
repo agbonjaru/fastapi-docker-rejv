@@ -16,19 +16,23 @@ cd fastapi-docker-rejv
 
 Organize your project files.
 
-plaintext
-Copy code
+```
 /fastapi-docker-rejv
 ├── app
 │   ├── main.py
 │   └── ...
+├── locust
+│   ├── locustfile.py
+│   └── ...
+├── docker-compose.yaml
+├── nginx.conf
 ├── Dockerfile
 ├── requirements.txt
 ├── .github
 │   └── workflows
 │       └── deploy_to_production.yml
 └── README.md
-
+```
 **GitHub Actions CI/CD Pipeline:**
 Create GitHub Actions Workflow:
 
