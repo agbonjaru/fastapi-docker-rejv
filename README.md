@@ -12,15 +12,16 @@ Docker Compose Installation Guide
 Running Locally with Docker Compose
 Clone this repository:
 
-bash
-Copy code
+```
 git clone https://github.com/agbonjaru/fastapi-docker-rejv
 cd your-repo
-Build the Docker images and start the services:
+``` 
 
-bash
-Copy code
+Build the Docker images and start the services:
+```
 docker-compose up --build
+```
+
 Access the FastAPI application:
 
 Open your web browser and go to http://localhost. You should see the FastAPI application with Nginx load balancing.
@@ -33,8 +34,7 @@ Configuration
 Adjust the number of FastAPI instances and other settings in the docker-compose.yml file.
 In the docker-compose.yml file, make sure to include the necessary configuration for Nginx, FastAPI, and any other services you have. Here's a sample section for the services in the docker-compose.yml:
 
-yaml
-Copy code
+```
 version: '3'
 
 services:
@@ -61,6 +61,7 @@ services:
     depends_on:
       - fastapi-app-1
       - fastapi-app-2
+```
 Ensure that the nginx.conf file is properly configured.
 
 
