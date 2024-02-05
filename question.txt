@@ -1,0 +1,29 @@
+
+Questions
+![alt text](image.png)
+a)
+Use python in your work
+1) Create a simple http web page that outputs the following stings
+- The number Pi, which is calculated using Leibniz's
+formula(https://en.wikipedia.org/wiki/Leibniz_formula_for_%CF%80) each time the http
+call is made
+- Python random pseudo-random sequence
+- POSIX timestamp
+2) Create a dockerfile based on it
+3) Write a compose file that specifies several such containers
+3) Add a proxy server that would load balance between several containers
+4) Write load tests for this setup, you can use both self-written scripts and open source tools.
+Assignment questions
+- What technologies and approaches would you use if you had to host this application on
+AWS? on GCP?
+- What common techniques and best practices do you know for writing a Dockerfile.?
+Which ones would be relevant for the practical assignment?
+b)
+Create an application-based github or gitlab repository that describes a CI pipeline for building
+this application in dev -> prod environments , where the application will push in a docker registry
+(docker hub or ttl.sh)
+What git branching strategy do you know and what are the best ones to use? What would you
+point out to write CI/CD pipelines more efficiently?
+c)
+Describe in your own words the pros and cons of using serverless architecture or microservice
+architecture in a project, what pros and cons and risks each of them entails.
