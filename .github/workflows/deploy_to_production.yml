@@ -1,0 +1,85 @@
+name: Deploy to Production.
+
+env:
+  SA_KEY: ${{secrets.SA_KEY}}
+  ENVIRONMENT: "production"
+  PROJECT_ID: ${{secrets.PROJECT_ID}}
+  CLOUD_RUN_INSTANCE_NAME: "leibniz-fast-api"
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Manually hit button
+    inputs:
+      ENVIRONMENT:
+        type: string
+        default: "staging"
+        description: 'Environment type'
+      CLOUD_RUN_INSTANCE_NAME:
+        description: 'Instance on which we need to deploy it.'
+        type: string
+        default: "leibniz-fast-api"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: 'actions/checkout@v3'
+
+    - name: Authenticate to Google
+      id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: ${{ env.SA_KEY }}
+
+    - name: Setup gcloud CLI
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+
+    - name: "Build Docker Image"
+      run: |
+        docker build -f Dockerfile -t ${{ env.CLOUD_RUN_INSTANCE_NAME }} .
+      shell: bash
+
+    - name: "Configure Docker Client"
+      run: |
+        gcloud auth configure-docker --quiet
+      shell: bash
+    #pushes to production container registry if env.ENVIRONMENT is set to production
+    - name: "Push Docker Image to GCR"
+      run: |
+        instance_name="${{ env.CLOUD_RUN_INSTANCE_NAME }}-${{ env.ENVIRONMENT }}"
+        if [[ ${{env.ENVIRONMENT}} -eq "production" ]]
+        then
+          instance_name="${{ env.CLOUD_RUN_INSTANCE_NAME }}"
+        fi
+        docker tag "${{ env.CLOUD_RUN_INSTANCE_NAME }}:latest" "us.gcr.io/${{ env.PROJECT_ID }}/$instance_name:latest"
+        docker push "us.gcr.io/${{ env.PROJECT_ID }}/$instance_name"
+      shell: bash
+     # Create cloud run service based on the env.ENVIRONMENT variable
+    - name: "Create CloudRun Service"
+      run: |
+        instance_name="${{ env.CLOUD_RUN_INSTANCE_NAME }}-${{ env.ENVIRONMENT }}"
+        if [[ ${{env.ENVIRONMENT}} -eq "production" ]]
+        then
+          instance_name="${{ env.CLOUD_RUN_INSTANCE_NAME }}"
+        fi
+        gcloud run deploy $instance_name --image "us.gcr.io/${{ env.PROJECT_ID }}/$instance_name:latest" \
+        --region us-east1 \
+        --allow-unauthenticated \
+        --cpu 4 \
+        --memory 2Gi \
+        --concurrency 120 \
+        --min-instances 8 \
+        --max-instances 100 \
+        --no-cpu-throttling \
+        --update-env-vars environment=${{env.ENVIRONMENT}} \
+        --update-env-vars db_name="$instance_name-${{ env.ENVIRONMENT }}" \
+        --update-secrets=DB_HOST=POSTGRES_INSTANCE_NAME:latest \
+        --update-secrets=CONNECTION_NAME=POSTGRES_INSTANCE_NAME:latest \
+        --update-secrets=DB_USERNAME=POSTGRES_USERNAME:latest \
+        --update-secrets=DB_PASSWORD=POSTGRES_PASSWORD:latest 
+
+      shell: bash
